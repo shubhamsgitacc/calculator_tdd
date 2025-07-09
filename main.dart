@@ -5,17 +5,26 @@ void main() {
     expect(calculateString(''), 0);
     expect(calculateString('1'), 1);
     expect(calculateString('1,5'), 6);
+    expect(calculateString("1,\n2,3"), 'invalid');
     expect(calculateString("1\n2,3"), 6);
+    expect(calculateString("1,\n2,3"), 'invalid');
   });
 }
 
-///for comma seperation and for new line im simply using tryint or can also use int.parse but using tryint which have trycatch by deault
-///so the idea is to eliminate any character other than number first since for now requirement only is for remove commas and new lines
-int calculateString(dynamic val) {
+///okay since added new line but need to add one more condition after reading the tdd kata 1 , one condition was missing
+/// when input is "1,\n" not okay or may be "/n,1" its also not ok
+
+calculateString(dynamic val) {
+  //"1,\n,2,3"
   String intput = '$val';
   int finalVal = 0;
   try {
     for (int i = 0; i < intput.length; i++) {
+      if ((i != 0 && i != intput.length - 1) && intput[i] == '\n') {
+        if (intput[i - 1] == ',' || intput[i + 1] == ',') {
+          return 'invalid';
+        }
+      }
       int num = int.tryParse(intput[i]) ?? 0;
       finalVal += num;
     }
