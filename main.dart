@@ -21,15 +21,12 @@ void main() {
     expect(calculateString('//@@\n11@@23'), 34);
     expect(calculateString('1,\n2'), 'invalid');
     expect(calculateString('1\n2'), 3);
-
-
-    print(calc('11@23', customDelimiter: '@'));
+    expect(calculateString('1,2,-3'), 'negatives not allowed');
+    expect(calculateString('1,2,-3,-4,0'), 'multiple negatives found -3, -4');
   });
 }
 
-/// so as per reading i find out only comma separated and new lines are allow
-/// so if it find any other im just throwing invalid
-/// for custom should followed by //
+///since we've added custom delimiters now it's time for negative number
 calculateString(dynamic val) {
   try {
     //"1,\n,2,3"
@@ -61,12 +58,9 @@ calculateString(dynamic val) {
         } else {
           if (i != input.length) {
             val = input.substring(i + 1, input.length);
-            print('this is val $val');
           } else {
             return 'invalid';
           }
-          print(val);
-          print(delimiter);
           break;
         }
       }
@@ -82,8 +76,8 @@ calculateString(dynamic val) {
 }
 
 dynamic calc(String val, {String? customDelimiter}) {
-  print(customDelimiter);
   if (val.isEmpty) return 'invalid';
+  int negativeCount = 0;
   // final delimiters = [',', '\n',"@@"];
   List<String> delimiters =
       (customDelimiter ?? '').isNotEmpty && customDelimiter != null
@@ -97,17 +91,27 @@ dynamic calc(String val, {String? customDelimiter}) {
     return 'invalid';
   }
   final delimiterPattern = RegExp(delimiters.map(RegExp.escape).join('|'));
-  print(delimiterPattern.pattern);
-  List<dynamic> vals = '2,,2,3'.split(',');
-  print(vals);
   final parts = val.split(delimiterPattern);
   int finalVal = 0;
+  List<int> negatives = [];
   for (int i = 0; i < parts.length; i++) {
     final part = parts[i];
     if (part.isEmpty || int.tryParse(part) == null) {
       return 'invalid';
     }
-    finalVal += int.tryParse(part) ?? 0;
+    int val = int.tryParse(part) ?? 0;
+    if (val < 0) {
+      negativeCount += 1;
+      negatives.add(val);
+      val = 0;
+    }
+    finalVal += val;
+  }
+  if (negativeCount == 1) {
+    return 'negatives not allowed';
+  } else if (negativeCount > 1) {
+    String str = '$negatives';
+    return 'multiple negatives found ${str.substring(1, str.length - 1)}';
   }
   return finalVal;
 }
