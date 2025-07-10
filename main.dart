@@ -25,11 +25,24 @@ void main() {
     expect(calculateString('1,2,-3,-4,0'), 'multiple negatives found -3, -4');
     expect(calculateString('1000,1,2'), 3);
     expect(calculateString('999,1,2,1000'), 1002);
+    expect(calculateString('//[@@][##]\n1@@2##3'), 6);
+    expect(calculateString('//[[][##]\n1[2##3'), 6);
 
+    expect(
+        calculateString(
+          '//***\n999***1***2***1000',
+        ),
+        1002);
+    expect(
+        calculateString(
+          '//####\n999####1',
+        ),
+        1000);
   });
 }
 
-///now let's fix for number that greater than 1000
+///Since our code is already handling the multiple length delimiters, now its time for multiple
+///delimiters with multiple del char
 calculateString(dynamic val) {
   try {
     //"1,\n,2,3"
@@ -54,20 +67,33 @@ calculateString(dynamic val) {
     }
     if (customDelimiter) {
       String delimiter = '';
+      List<String> deliList = [];
       String val = '';
+      bool isDeliList = false;
       for (int i = 2; i < input.length; i++) {
         if (input[i] != '\n') {
-          delimiter += input[i];
+          if (input[i] == '[') {
+            isDeliList = true;
+          }
+          if (isDeliList) {
+            delimiter += input[i];
+            if (input[i] == ']') {
+              deliList.add(delimiter.substring(1, delimiter.length - 1));
+              delimiter = '';
+            }
+          } else {
+            delimiter += input[i];
+          }
         } else {
           if (i != input.length) {
             val = input.substring(i + 1, input.length);
           } else {
-            return 'invalid';
+            return 0;
           }
           break;
         }
       }
-      return calc(val, customDelimiter: delimiter);
+      return calc(val, customDelimiter: isDeliList ? deliList : [delimiter]);
     } else {
       return calc(input);
     }
@@ -78,13 +104,14 @@ calculateString(dynamic val) {
   // return finalVal;
 }
 
-dynamic calc(String val, {String? customDelimiter}) {
+dynamic calc(String val, {List<String>? customDelimiter}) {
   if (val.isEmpty) return 'invalid';
   int negativeCount = 0;
+
   // final delimiters = [',', '\n',"@@"];
   List<String> delimiters =
-      (customDelimiter ?? '').isNotEmpty && customDelimiter != null
-          ? [customDelimiter]
+      (customDelimiter ?? []).isNotEmpty && customDelimiter != null
+          ? customDelimiter
           : [
               ',',
               '\n',
@@ -107,7 +134,7 @@ dynamic calc(String val, {String? customDelimiter}) {
       negativeCount += 1;
       negatives.add(val);
       val = 0;
-    }else if(val>=1000){
+    } else if (val >= 1000) {
       val = 0;
     }
     finalVal += val;
