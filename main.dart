@@ -23,10 +23,13 @@ void main() {
     expect(calculateString('1\n2'), 3);
     expect(calculateString('1,2,-3'), 'negatives not allowed');
     expect(calculateString('1,2,-3,-4,0'), 'multiple negatives found -3, -4');
+    expect(calculateString('1000,1,2'), 3);
+    expect(calculateString('999,1,2,1000'), 1002);
+
   });
 }
 
-///since we've added custom delimiters now it's time for negative number
+///now let's fix for number that greater than 1000
 calculateString(dynamic val) {
   try {
     //"1,\n,2,3"
@@ -103,6 +106,8 @@ dynamic calc(String val, {String? customDelimiter}) {
     if (val < 0) {
       negativeCount += 1;
       negatives.add(val);
+      val = 0;
+    }else if(val>=1000){
       val = 0;
     }
     finalVal += val;
