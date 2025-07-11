@@ -37,10 +37,13 @@ void main() {
           '//####\n999####1',
         ),
         1000);
+    expect(calculateString('1,5.2'), 6.2);
+    expect(calculateString('//..\n1,5.2'), 'invalid');
+    expect(calculateString('//[,]\n1,5.2'), 6.2);
   });
 }
 
-///since we handled every condition now lets optimize code
+///since no float calulation was mention, im also adding it so with this no delemiter'.' is allowed
 calculateString(dynamic val) {
   try {
     String input = '$val';
@@ -66,6 +69,9 @@ calculateString(dynamic val) {
       bool isDeliList = false;
       for (int i = 2; i < input.length; i++) {
         if (input[i] != '\n') {
+          if (input[i] == '.') {
+            return 'invalid';
+          }
           if (input[i] == '[') {
             isDeliList = true;
           }
@@ -116,14 +122,22 @@ dynamic calc(String val, {List<String>? customDelimiter}) {
   }
   final delimiterPattern = RegExp(delimiters.map(RegExp.escape).join('|'));
   final parts = val.split(delimiterPattern);
-  int finalVal = 0;
-  List<int> negatives = [];
+  num finalVal = 0;
+  List<num> negatives = [];
   for (int i = 0; i < parts.length; i++) {
     final part = parts[i];
-    if (part.isEmpty || int.tryParse(part) == null) {
+    if (part.isEmpty) {
+      return 'invalid';
+    } else if (part.contains('.')) {
+      if (double.tryParse(part) == null) {
+        return 'invalid';
+      }
+    } else if (int.tryParse(part) == null) {
       return 'invalid';
     }
-    int val = int.tryParse(part) ?? 0;
+    num val = part.contains('.')
+        ? double.tryParse(part) ?? 0
+        : int.tryParse(part) ?? 0;
     if (val < 0) {
       negativeCount += 1;
       negatives.add(val);
