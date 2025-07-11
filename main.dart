@@ -27,7 +27,6 @@ void main() {
     expect(calculateString('999,1,2,1000'), 1002);
     expect(calculateString('//[@@][##]\n1@@2##3'), 6);
     expect(calculateString('//[[][##]\n1[2##3'), 6);
-
     expect(
         calculateString(
           '//***\n999***1***2***1000',
@@ -41,28 +40,23 @@ void main() {
   });
 }
 
-///Since our code is already handling the multiple length delimiters, now its time for multiple
-///delimiters with multiple del char
+///since we handled every condition now lets optimize code
 calculateString(dynamic val) {
   try {
-    //"1,\n,2,3"
     String input = '$val';
     bool customDelimiter = false;
-    //check for delimiters at first two char
     if (input.isEmpty) return 0;
-    if (input.length == 1 && int.tryParse(input[0]).runtimeType == int) {
-      return int.tryParse(input[0]);
-    } else if (input.length == 1) {
-      return 'invalid';
+    if (input.length == 1) {
+      int? val = int.tryParse(input[0]);
+      return val ?? 'invalid';
     } else if (input.length == 2) {
       int? first = int.tryParse(input[0]);
       int? second = int.tryParse(input[1]);
-      if (first.runtimeType == int && second.runtimeType == int) {
-        return int.tryParse('$first$second');
-      } else {
-        return 'invalid';
+      if (first != null && second != null) {
+        return int.parse('$first$second');
       }
-    } else if (input.length > 2 && input[0] == '/' && input[1] == '/') {
+    }
+    if (input.startsWith('//')) {
       customDelimiter = true;
     }
     if (customDelimiter) {
